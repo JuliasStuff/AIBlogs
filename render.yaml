@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ai-blogs
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REFRESH_MINUTES
+        value: 60
