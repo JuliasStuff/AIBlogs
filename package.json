@@ -1,0 +1,22 @@
+{
+  "name": "ai-blogs",
+  "version": "1.0.0",
+  "description": "AI Blog Reader PWA – MIT News, MarkTechPost, Towards AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.5.0",
+    "axios": "^1.7.0",
+    "cheerio": "^1.0.0",
+    "express": "^4.21.0",
+    "jsdom": "^25.0.0",
+    "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0"
+  }
+}

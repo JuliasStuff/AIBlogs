@@ -1,0 +1,17 @@
+{
+  "name": "AI Blogs",
+  "short_name": "AI Blogs",
+  "description": "AI Blog Reader – MIT News, MarkTechPost, Towards AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

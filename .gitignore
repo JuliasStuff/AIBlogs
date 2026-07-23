@@ -1,0 +1,11 @@
+node_modules/
+
+# Runtime-generated data – recreated automatically on first run
+data/articles.json
+data/read.json
+data/status.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.env

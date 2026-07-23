@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Blogs</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="app">
+
+  <header id="hdr">
+    <div class="hdr-left">
+      <span class="app-icon">🧠</span>
+      <span class="app-title">AI Blogs</span>
+      <span id="unread-badge" class="badge hidden">0</span>
+    </div>
+    <div class="hdr-right">
+      <span id="last-refresh" class="meta-text"></span>
+      <button id="btn-unread-toggle" class="pill-btn active">Unread</button>
+      <button id="btn-refresh" class="icon-btn" title="Refresh">↺</button>
+    </div>
+  </header>
+
+  <nav id="source-tabs">
+    <button class="tab active" data-source="all">All</button>
+    <button class="tab src-mit"          data-source="mit">MIT News</button>
+    <button class="tab src-marktechpost" data-source="marktechpost">MarkTechPost</button>
+    <button class="tab src-towardsai"    data-source="towardsai">Towards AI</button>
+    <button class="tab src-topbots"      data-source="topbots">TopBots</button>
+  </nav>
+
+  <div id="layout">
+
+    <div id="feed">
+      <div id="feed-bar">
+        <span id="feed-count" class="meta-text"></span>
+        <button id="btn-mark-all" class="link-btn">Mark all read</button>
+      </div>
+      <div id="article-list"></div>
+    </div>
+
+    <div id="reader" class="closed">
+      <div id="reader-empty">Select an article to read</div>
+      <div id="reader-toolbar">
+        <button id="reader-back">← Back</button>
+        <a id="reader-orig" href="#" target="_blank" rel="noopener noreferrer">Open original ↗</a>
+      </div>
+      <div id="reader-meta">
+        <div id="reader-title"></div>
+        <div id="reader-sub"></div>
+      </div>
+      <div id="reader-body"></div>
+    </div>
+
+  </div>
+
+  <div id="toast" class="hidden"></div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
