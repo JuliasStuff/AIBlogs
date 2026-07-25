@@ -6,6 +6,18 @@ let activeSource = 'all';
 let showUnreadOnly = true;
 let activeId = null;
 
+// ── Read state (localStorage) ─────────────────────────────────────────────────
+const READ_KEY = 'aiblogs_read';
+function getReadSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function markRead(ids) {
+  const s = getReadSet();
+  ids.forEach(id => s.add(String(id)));
+  localStorage.setItem(READ_KEY, JSON.stringify([...s]));
+}
+
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const el = id => document.getElementById(id);
 const articleList      = el('article-list');
@@ -37,21 +49,30 @@ async function apiFetch(method, url, body) {
 
 // ── Load & render ─────────────────────────────────────────────────────────────
 async function loadArticles() {
-  const params = new URLSearchParams({ source: activeSource });
-  if (showUnreadOnly) params.set('filter', 'unread');
-  allArticles = await apiFetch('GET', `/api/articles?${params}`);
+  allArticles = await apiFetch('GET', '/api/articles');
+  const readSet = getReadSet();
+  allArticles.forEach(a => { a.isRead = readSet.has(a.id); });
   renderList();
   refreshStatus();
 }
 
+function displayedArticles() {
+  return allArticles.filter(a => {
+    if (activeSource !== 'all' && a.source !== activeSource) return false;
+    if (showUnreadOnly && a.isRead) return false;
+    return true;
+  });
+}
+
 function renderList() {
-  if (!allArticles.length) {
+  const list = displayedArticles();
+  if (!list.length) {
     articleList.innerHTML = `<div class="empty">${showUnreadOnly ? 'All caught up! No unread articles.' : 'No articles.'}</div>`;
     feedCount.textContent = '';
     return;
   }
-  feedCount.textContent = `${allArticles.length} article${allArticles.length !== 1 ? 's' : ''}`;
-  articleList.innerHTML = allArticles.map(cardHTML).join('');
+  feedCount.textContent = `${list.length} article${list.length !== 1 ? 's' : ''}`;
+  articleList.innerHTML = list.map(cardHTML).join('');
   articleList.querySelectorAll('.card').forEach(c =>
     c.addEventListener('click', () => openArticle(c.dataset.id))
   );
@@ -73,24 +94,33 @@ function cardHTML(a) {
 
 async function refreshStatus() {
   const s = await apiFetch('GET', '/api/status');
-  const n = s.unread || 0;
-  unreadBadge.textContent = n;
-  unreadBadge.classList.toggle('hidden', n === 0);
+  const readSet = getReadSet();
 
   if (s.lastRefresh) {
     lastRefreshEl.textContent = `Updated ${timeAgo(s.lastRefresh)}`;
   }
 
-  // Update tab labels with unread counts
+  const sourceUnread = {};
+  let totalUnread = 0;
+  for (const a of allArticles) {
+    if (!readSet.has(a.id)) {
+      totalUnread++;
+      sourceUnread[a.source] = (sourceUnread[a.source] || 0) + 1;
+    }
+  }
+
+  unreadBadge.textContent = totalUnread;
+  unreadBadge.classList.toggle('hidden', totalUnread === 0);
+
   document.querySelectorAll('#source-tabs .tab').forEach(tab => {
     const src = tab.dataset.source;
     const base = tab.dataset.base || tab.textContent.replace(/\s*\(\d+\)$/, '');
     tab.dataset.base = base;
     if (src === 'all') {
-      tab.textContent = n ? `${base} (${n})` : base;
+      tab.textContent = totalUnread ? `${base} (${totalUnread})` : base;
     } else {
-      const info = s.sources?.[src];
-      tab.textContent = info?.unread ? `${base} (${info.unread})` : base;
+      const n = sourceUnread[src] || 0;
+      tab.textContent = n ? `${base} (${n})` : base;
     }
   });
 }
@@ -117,10 +147,9 @@ async function openArticle(id) {
   // Mark as read
   if (!article.isRead) {
     article.isRead = true;
-    apiFetch('POST', '/api/read', { ids: [id] }).then(() => {
-      renderList();
-      refreshStatus();
-    }).catch(() => {});
+    markRead([id]);
+    renderList();
+    refreshStatus();
   }
 
   // Fetch content
@@ -198,12 +227,14 @@ btnRefresh.addEventListener('click', async () => {
   }
 });
 
-btnMarkAll.addEventListener('click', async () => {
-  const ids = allArticles.filter(a => !a.isRead).map(a => a.id);
-  if (!ids.length) return;
-  await apiFetch('POST', '/api/read', { ids });
-  showToast(`Marked ${ids.length} as read`);
-  await loadArticles();
+btnMarkAll.addEventListener('click', () => {
+  const unread = allArticles.filter(a => !a.isRead && (activeSource === 'all' || a.source === activeSource));
+  if (!unread.length) return;
+  unread.forEach(a => { a.isRead = true; });
+  markRead(unread.map(a => a.id));
+  showToast(`Marked ${unread.length} as read`);
+  renderList();
+  refreshStatus();
 });
 
 // ── Utils ──────────────────────────────────────────────────────────────────────
@@ -236,6 +267,13 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
 }
+
+// ── About modal ───────────────────────────────────────────────────────────────
+const aboutModal = el('about-modal');
+el('btn-about').addEventListener('click', () => aboutModal.classList.remove('hidden'));
+el('about-close').addEventListener('click', () => aboutModal.classList.add('hidden'));
+aboutModal.addEventListener('click', e => { if (e.target === aboutModal) aboutModal.classList.add('hidden'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') aboutModal.classList.add('hidden'); });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 setReaderOpen(false);

@@ -172,11 +172,6 @@ async function refreshAll() {
 
   writeData('articles.json', merged);
 
-  // Prune stale read IDs
-  const articleIds = new Set(merged.map(a => a.id));
-  const read = readData('read.json', []).filter(id => articleIds.has(id));
-  writeData('read.json', read);
-
   writeData('status.json', {
     lastRefresh: ts,
     newCount: newArticles.length,
@@ -195,33 +190,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/articles', (req, res) => {
-  const articles = readData('articles.json', []);
-  const readSet = new Set(readData('read.json', []));
-  const { source, filter } = req.query;
-
-  let list = source && source !== 'all' ? articles.filter(a => a.source === source) : articles;
-  if (filter === 'unread') list = list.filter(a => !readSet.has(a.id));
-  else if (filter === 'read') list = list.filter(a => readSet.has(a.id));
-
-  res.json(list.map(a => ({ ...a, isRead: readSet.has(a.id) })));
-});
-
-app.post('/api/read', (req, res) => {
-  const { ids } = req.body;
-  if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids array required' });
-  const readSet = new Set(readData('read.json', []));
-  ids.forEach(id => readSet.add(String(id)));
-  writeData('read.json', [...readSet]);
-  res.json({ ok: true });
-});
-
-app.post('/api/unread', (req, res) => {
-  const { ids } = req.body;
-  if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids array required' });
-  const readSet = new Set(readData('read.json', []));
-  ids.forEach(id => readSet.delete(String(id)));
-  writeData('read.json', [...readSet]);
-  res.json({ ok: true });
+  res.json(readData('articles.json', []));
 });
 
 app.post('/api/refresh', async (req, res) => {
@@ -231,22 +200,7 @@ app.post('/api/refresh', async (req, res) => {
 
 app.get('/api/status', (req, res) => {
   const status = readData('status.json', {});
-  const articles = readData('articles.json', []);
-  const readSet = new Set(readData('read.json', []));
-
-  const sources = {};
-  for (const a of articles) {
-    if (!sources[a.source]) sources[a.source] = { total: 0, unread: 0, name: a.sourceName };
-    sources[a.source].total++;
-    if (!readSet.has(a.id)) sources[a.source].unread++;
-  }
-
-  res.json({
-    ...status,
-    total: articles.length,
-    unread: articles.filter(a => !readSet.has(a.id)).length,
-    sources
-  });
+  res.json(status);
 });
 
 // Article reader proxy – fetches page, extracts content with Readability

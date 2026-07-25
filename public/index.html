@@ -14,7 +14,7 @@
 
   <header id="hdr">
     <div class="hdr-left">
-      <span class="app-icon">🧠</span>
+      <span class="app-icon">✨</span>
       <span class="app-title">AI Blogs</span>
       <span id="unread-badge" class="badge hidden">0</span>
     </div>
@@ -22,6 +22,7 @@
       <span id="last-refresh" class="meta-text"></span>
       <button id="btn-unread-toggle" class="pill-btn active">Unread</button>
       <button id="btn-refresh" class="icon-btn" title="Refresh">↺</button>
+      <button id="btn-about" class="icon-btn" title="About this app">ⓘ</button>
     </div>
   </header>
 
@@ -59,6 +60,28 @@
   </div>
 
   <div id="toast" class="hidden"></div>
+
+  <div id="about-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="About this app">
+    <div class="modal-box">
+      <button id="about-close" class="modal-close" aria-label="Close">&times;</button>
+      <div class="modal-header">
+        <span style="font-size:22px">✨</span>
+        <h2 class="modal-title">About AI Blogs</h2>
+      </div>
+      <div class="modal-body">
+        <p>AI Blogs was built by <strong>Julia Fishler</strong> as a showcase of what’s possible when you build real apps with AI &mdash; from idea to deployment.</p>
+        <p>It aggregates the latest AI news and research from MIT News, MarkTechPost, Towards AI, and TopBots, with a clean built-in reader. Please use it as much as you like.</p>
+        <div class="modal-note">
+          <span class="modal-note-icon">&#9201;</span>
+          <div>
+            <strong>First load may be slow</strong>
+            <p>If the app takes a moment to respond on your first visit, the server is waking up from sleep. It idles after 15&nbsp;minutes of inactivity &mdash; a deliberate trade-off to keep hosting free. It’s quick once it’s awake!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 <script src="/app.js"></script>
 </body>
